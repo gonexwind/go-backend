@@ -21,26 +21,32 @@ func SetupRouter() *gin.Engine {
 		ExposeHeaders: []string{"Content-Length"},
 	}))
 
-	// route register
-	router.POST("/api/register", controllers.Register)
+	public := router.Group("/api")
+	{
+		// Auth
+		public.POST("/register", controllers.Register)
+		public.POST("/login", controllers.Login)
 
-	// route login
-	router.POST("/api/login", controllers.Login)
+		// Post
+		public.GET("/posts", controllers.ShowPosts)
+	}
 
-	// route users
-	router.GET("/api/users", middlewares.AuthMiddleware(), controllers.FindUsers)
+	protected := router.Group("/api")
+	protected.Use(middlewares.AuthMiddleware())
+	{
+		// Profile
+		protected.GET("/profile", controllers.GetProfile)
+		//protected.GET("/users", controllers.FindUsers)
+		//protected.POST("/users", controllers.CreateUser)
+		//protected.GET("/users/:id", controllers.FindUserById)
+		//protected.PUT("/users/:id", controllers.UpdateUser)
+		//protected.DELETE("/users/:id", controllers.DeleteUser)
 
-	// route user create
-	router.POST("/api/users", middlewares.AuthMiddleware(), controllers.CreateUser)
-
-	// route user by id
-	router.GET("/api/users/:id", middlewares.AuthMiddleware(), controllers.FindUserById)
-
-	// route user update
-	router.PUT("/api/users/:id", middlewares.AuthMiddleware(), controllers.UpdateUser)
-
-	// route user delete
-	router.DELETE("/api/users/:id", middlewares.AuthMiddleware(), controllers.DeleteUser)
+		// POST
+		protected.POST("/posts", controllers.CreatePost)
+		protected.PUT("/posts/:id", controllers.UpdatePost)
+		protected.DELETE("/posts/:id", controllers.DeletePost)
+	}
 
 	return router
 }
