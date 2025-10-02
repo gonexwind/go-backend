@@ -53,7 +53,15 @@ func CreatePost(c *gin.Context) {
 func ShowPosts(c *gin.Context) {
 	var posts []models.Post
 
-	database.DB.Find(&posts)
+	// Include comments for each post
+	if err := database.DB.Preload("Comments").Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, structs.ErrorResponse{
+			Success: false,
+			Message: "Failed to fetch posts",
+			Errors:  helpers.TranslateErrorMessage(err),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, structs.SuccessResponse{
 		Success: true,
@@ -153,5 +161,26 @@ func DeletePost(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.SuccessResponse{
 		Success: true,
 		Message: "Post deleted successfully",
+	})
+}
+
+// ShowPost returns a single post with its comments
+func ShowPost(c *gin.Context) {
+	id := c.Param("id")
+
+	var post models.Post
+	if err := database.DB.Preload("Comments").First(&post, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, structs.ErrorResponse{
+			Success: false,
+			Message: "Post not found",
+			Errors:  helpers.TranslateErrorMessage(err),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, structs.SuccessResponse{
+		Success: true,
+		Message: "Post Detail",
+		Data:    post,
 	})
 }

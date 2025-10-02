@@ -29,6 +29,7 @@ func SetupRouter() *gin.Engine {
 
 		// Post
 		public.GET("/posts", controllers.ShowPosts)
+		public.GET("/posts/:id", controllers.ShowPost)
 	}
 
 	protected := router.Group("/api")
@@ -46,6 +47,11 @@ func SetupRouter() *gin.Engine {
 		protected.POST("/posts", controllers.CreatePost)
 		protected.PUT("/posts/:id", controllers.UpdatePost)
 		protected.DELETE("/posts/:id", controllers.DeletePost)
+
+		// COMMENTS
+		protected.POST("/comments", controllers.CreateComment)
+		protected.PUT("/comments/:id", controllers.UpdateComment)
+		protected.DELETE("/comments/:id", controllers.DeleteComment)
 	}
 
 	return router
